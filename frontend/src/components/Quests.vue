@@ -1,6 +1,9 @@
 <template>
   <div>
-    <h2 class="section-title">Ежедневные задания</h2>
+    <div class="reset-header">
+      <h2 class="section-title">Ежедневные задания</h2>
+      <button @click="resetAllQuests" class="reset-all-btn">Сбросить все</button>
+    </div>
     <p class="hint">Выполняй задания и получай бонусы</p>
 
     <div class="quest-list">
@@ -42,14 +45,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const emit = defineEmits(['switchToGame', 'switchToWheel', 'switchToQuiz'])
+const emit = defineEmits(['switchToGame', 'switchToSapper', 'switchToWheel', 'switchToGoldChart'])
 
 const selectedQuest = ref(null)
 const quests = ref([])
 
 const selectQuest = (id) => {
   selectedQuest.value = id
-  // Через 2 секунды убираем подсветку
   setTimeout(() => {
     if (selectedQuest.value === id) {
       selectedQuest.value = null
@@ -57,13 +59,24 @@ const selectQuest = (id) => {
   }, 2000)
 }
 
+// Сброс всех квестов
+const resetAllQuests = () => {
+  if (confirm('Сбросить все квесты? Прогресс будет потерян.')) {
+    for (let i = 0; i < quests.value.length; i++) {
+      quests.value[i].completed = false
+    }
+    localStorage.setItem('sks_quests', JSON.stringify(quests.value))
+    alert('Все квесты сброшены!')
+  }
+}
+
 const loadQuests = () => {
-  // Простая загрузка из localStorage
   const saved = localStorage.getItem('sks_quests')
   const defaultQuests = [
     { id: 1, title: 'Слово дня', description: 'Угадай слово из 5 букв', reward: 30, type: 'wordgame', weekly: 0, cooldown_days: 1, completed: false },
-    { id: 2, title: 'Викторина', description: 'Ответь на вопросы о золоте', reward: 25, type: 'quiz', weekly: 0, cooldown_days: 3, completed: false },
-    { id: 3, title: 'Колесо', description: 'Покрути колесо фортуны', reward: 25, type: 'wheel', weekly: 1, cooldown_days: 7, completed: false },
+    { id: 2, title: 'Сапёр', description: 'Найди все алмазы и не наступи на мину', reward: 25, type: 'sapper', weekly: 0, cooldown_days: 3, completed: false },
+    { id: 3, title: 'Колесо фортуны', description: 'Покрути колесо и получи приз', reward: 25, type: 'wheel', weekly: 1, cooldown_days: 7, completed: false },
+    { id: 4, title: 'Трейдер золота', description: 'Угадай движение цены золота', reward: 25, type: 'goldchart', weekly: 0, cooldown_days: 1, completed: false }
   ]
   
   if (saved) {
@@ -75,6 +88,21 @@ const loadQuests = () => {
   quests.value = defaultQuests
 }
 
+const completeRegularQuest = async (questId) => {
+  const quest = quests.value.find(q => q.id === questId)
+  if (quest.completed) return
+  
+  quest.completed = true
+  
+  let currentBalance = localStorage.getItem('sks_balance')
+  currentBalance = currentBalance ? parseInt(currentBalance) : 350
+  currentBalance += quest.reward
+  localStorage.setItem('sks_balance', currentBalance)
+  localStorage.setItem('sks_quests', JSON.stringify(quests.value))
+  
+  alert(`Квест выполнен! +${quest.reward} бонусов! Баланс: ${currentBalance}`)
+}
+
 const startQuest = (questId) => {
   const quest = quests.value.find(q => q.id === questId)
   if (quest.completed) return
@@ -83,12 +111,45 @@ const startQuest = (questId) => {
     case 'wordgame':
       emit('switchToGame')
       break
-    case 'quiz':
-      emit('switchToQuiz')
+    case 'sapper':
+      emit('switchToSapper')
       break
     case 'wheel':
       emit('switchToWheel')
       break
+    case 'goldchart':
+      emit('switchToGoldChart')
+      break
+    default:
+      completeRegularQuest(questId)
+  }
+}
+
+window.completeWordGameQuest = async () => {
+  const quest = quests.value.find(q => q.id === 1)
+  if (quest && !quest.completed) {
+    await completeRegularQuest(1)
+  }
+}
+
+window.completeSapperQuest = async () => {
+  const quest = quests.value.find(q => q.id === 2)
+  if (quest && !quest.completed) {
+    await completeRegularQuest(2)
+  }
+}
+
+window.completeWheelQuest = async () => {
+  const quest = quests.value.find(q => q.id === 3)
+  if (quest && !quest.completed) {
+    await completeRegularQuest(3)
+  }
+}
+
+window.completeGoldChartQuest = async () => {
+  const quest = quests.value.find(q => q.id === 4)
+  if (quest && !quest.completed) {
+    await completeRegularQuest(4)
   }
 }
 
@@ -96,12 +157,35 @@ onMounted(loadQuests)
 </script>
 
 <style scoped>
+.reset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
 .section-title {
   color: #cc0000;
   font-size: 20px;
   text-align: center;
   margin-bottom: 5px;
   font-weight: bold;
+  flex: 1;
+}
+
+.reset-all-btn {
+  background: #2c3e50;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.reset-all-btn:hover {
+  background: #1a252f;
 }
 
 .hint {
