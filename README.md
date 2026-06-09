@@ -35,3 +35,7 @@ git add README.md
 git commit -m "Добавлен README.md"
 git push origin main
 ```
+
+backend v2
+https://github.com/Murchi228pro/GamificationBackend
+
