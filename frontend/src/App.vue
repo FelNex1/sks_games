@@ -1,5 +1,5 @@
 <template>
-  <div class="app">
+  <div class="app-wrapper">
     <div class="content">
       <Quests 
         @switchToGame="activeGame = 'wordgame'"
@@ -47,15 +47,15 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import Quests from './components/Quests.vue'
-import WordGame from './components/WordGame.vue'
-import SapperGame from './components/Sapper.vue'
-import WheelGame from './components/Wheel.vue'
-import GoldChart from './components/GoldChart.vue'
+<script setup lang="js">
+  import { ref } from 'vue';
+  import Quests from './components/Quests.vue';
+  import WordGame from './components/WordGame.vue';
+  import SapperGame from './components/Sapper.vue';
+  import WheelGame from './components/Wheel.vue';
+  import GoldChart from './components/GoldChart.vue';
 
-const activeGame = ref(null)
+  const activeGame = ref(null);
 </script>
 
 <style>
@@ -71,7 +71,7 @@ body {
   min-height: 100vh;
 }
 
-.app {
+.app-wrapper {
   max-width: 600px;
   margin: 0 auto;
   padding: 16px;
@@ -122,7 +122,7 @@ body {
 }
 
 @media (max-width: 480px) {
-  .app {
+  .app-wrapper {
     padding: 12px;
   }
   .content {
